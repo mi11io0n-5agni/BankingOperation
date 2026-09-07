@@ -1,9 +1,13 @@
-import React from 'react'
+import Navbar from "./components/Navbar/Navbar";
+import Home from "./pages/Home/Home";
 
-export default function App() {
+function App() {
   return (
-    <div>
-      <h1>Welcome to Vite!</h1>
-    </div>
-  )
+    <>
+      <Navbar />
+      <Home />
+    </>
+  );
 }
+
+export default App;
