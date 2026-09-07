@@ -88,3 +88,6 @@
 .login-btn:hover {
   background-color: #006b31;
 }
+.logo {
+  text-decoration: none;
+}

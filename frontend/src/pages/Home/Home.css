@@ -338,6 +338,22 @@
   line-height: 1.6;
 }
 
+.primary-btn,
+.secondary-btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.service-btn {
+  display: inline-block;
+  margin-top: 20px;
+  color: #00843d;
+  font-weight: 600;
+  text-decoration: none;
+}
+
 /* ================= RESPONSIVE ================= */
 
 @media (max-width: 900px) {

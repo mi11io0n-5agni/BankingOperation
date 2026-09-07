@@ -1,26 +1,36 @@
+import { Link } from "react-router-dom";
 import "./Navbar.css";
 
 function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <div className="logo">
+
+        <Link to="/" className="logo">
           <span className="logo-icon">C</span>
+
           <div className="logo-text">
             <h2>COOPBank</h2>
             <span>Queue Management System</span>
           </div>
-        </div>
+        </Link>
 
         <div className="nav-links">
-          <a href="#home">Home</a>
-          <a href="#services">Services</a>
-          <a href="#queue">Queue Status</a>
+          <Link to="/">Home</Link>
 
-          <button className="login-btn">
+          <Link to="/#services">
+            Services
+          </Link>
+
+          <Link to="/queue-status">
+            Queue Status
+          </Link>
+
+          <Link to="/login" className="login-btn">
             Employee Login
-          </button>
+          </Link>
         </div>
+
       </div>
     </nav>
   );

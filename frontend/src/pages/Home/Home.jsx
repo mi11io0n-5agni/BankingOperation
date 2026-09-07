@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import "./Home.css";
 
 const services = [
@@ -53,13 +54,13 @@ function Home() {
             </p>
 
             <div className="hero-buttons">
-              <button className="primary-btn">
+              <Link to="/get-queue" className="primary-btn">
                 Take a Queue Number
-              </button>
+              </Link>
 
-              <button className="secondary-btn">
+              <Link to="/queue-status" className="secondary-btn">
                 Check Queue Status
-              </button>
+              </Link>
             </div>
 
             <div className="hero-stats">
@@ -129,7 +130,9 @@ function Home() {
 
               <p>{service.description}</p>
 
-              <button>Get Queue →</button>
+              <Link to="/get-queue" className="service-btn">
+                  Get Queue →
+              </Link>
             </div>
           ))}
         </div>
