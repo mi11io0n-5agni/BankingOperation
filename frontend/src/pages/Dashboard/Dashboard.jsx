@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
@@ -25,11 +26,24 @@ function Dashboard() {
   const [error, setError] = useState("");
 
   // ==========================================
-  // GET AUTH TOKEN
+  // GET JWT TOKEN
   // ==========================================
 
   const getToken = () => {
     return localStorage.getItem("coopbankToken");
+  };
+
+  // ==========================================
+  // HANDLE UNAUTHORIZED ACCESS
+  // ==========================================
+
+  const handleUnauthorized = () => {
+    localStorage.removeItem("coopbankToken");
+    localStorage.removeItem("coopbankUser");
+
+    navigate("/login", {
+      replace: true,
+    });
   };
 
   // ==========================================
@@ -41,11 +55,30 @@ function Dashboard() {
       setLoading(true);
       setError("");
 
+      const token = getToken();
+
+      // If no token exists, return to login
+      if (!token) {
+        handleUnauthorized();
+        return;
+      }
+
       const response = await fetch(
-        "http://localhost:5000/api/queues"
+        "http://localhost:5000/api/queues",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       const data = await response.json();
+
+      // Token expired or invalid
+      if (response.status === 401) {
+        handleUnauthorized();
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(
@@ -54,6 +87,7 @@ function Dashboard() {
       }
 
       setQueues(data.queues || []);
+
     } catch (error) {
       console.error("Fetch Queues Error:", error);
 
@@ -67,7 +101,7 @@ function Dashboard() {
   };
 
   // ==========================================
-  // LOAD QUEUES
+  // LOAD QUEUES WHEN PAGE OPENS
   // ==========================================
 
   useEffect(() => {
@@ -85,6 +119,11 @@ function Dashboard() {
 
       const token = getToken();
 
+      if (!token) {
+        handleUnauthorized();
+        return;
+      }
+
       const response = await fetch(
         `http://localhost:5000/api/queues/${id}/status`,
         {
@@ -92,10 +131,7 @@ function Dashboard() {
 
           headers: {
             "Content-Type": "application/json",
-
-            ...(token && {
-              Authorization: `Bearer ${token}`,
-            }),
+            Authorization: `Bearer ${token}`,
           },
 
           body: JSON.stringify({
@@ -106,6 +142,12 @@ function Dashboard() {
 
       const data = await response.json();
 
+      // Token expired or invalid
+      if (response.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(
           data.message ||
@@ -113,14 +155,11 @@ function Dashboard() {
         );
       }
 
-      // Reload queues after updating
+      // Reload all queues after updating
       await fetchQueues();
 
     } catch (error) {
-      console.error(
-        "Update Queue Error:",
-        error
-      );
+      console.error("Update Queue Error:", error);
 
       setError(
         error.message ||
@@ -167,7 +206,6 @@ function Dashboard() {
       alert(
         `Customer ${servingQueue.queueNumber} is currently being served. Please complete the current service first.`
       );
-
       return;
     }
 
@@ -186,7 +224,6 @@ function Dashboard() {
       alert(
         "There is no customer currently being served."
       );
-
       return;
     }
 
@@ -221,7 +258,6 @@ function Dashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("coopbankToken");
-
     localStorage.removeItem("coopbankUser");
 
     navigate("/login", {
@@ -298,8 +334,7 @@ function Dashboard() {
             </p>
 
             <p>
-              Manage customer queues and banking
-              service operations.
+              Manage customer queues and banking service operations.
             </p>
           </div>
 
@@ -308,10 +343,7 @@ function Dashboard() {
             <button
               className="refresh-btn"
               onClick={fetchQueues}
-              disabled={
-                loading ||
-                actionLoading
-              }
+              disabled={loading || actionLoading}
             >
               ↻ Refresh
             </button>
@@ -340,67 +372,47 @@ function Dashboard() {
         <div className="dashboard-stats">
 
           <div className="stat-card">
-
             <div className="stat-icon">
               👥
             </div>
 
             <div>
               <span>Waiting</span>
-
-              <strong>
-                {waitingCount}
-              </strong>
+              <strong>{waitingCount}</strong>
             </div>
-
           </div>
 
           <div className="stat-card">
-
             <div className="stat-icon">
               📞
             </div>
 
             <div>
               <span>Serving</span>
-
-              <strong>
-                {servingCount}
-              </strong>
+              <strong>{servingCount}</strong>
             </div>
-
           </div>
 
           <div className="stat-card">
-
             <div className="stat-icon">
               ✓
             </div>
 
             <div>
               <span>Completed</span>
-
-              <strong>
-                {completedCount}
-              </strong>
+              <strong>{completedCount}</strong>
             </div>
-
           </div>
 
           <div className="stat-card">
-
             <div className="stat-icon">
               ✕
             </div>
 
             <div>
               <span>Cancelled</span>
-
-              <strong>
-                {cancelledCount}
-              </strong>
+              <strong>{cancelledCount}</strong>
             </div>
-
           </div>
 
         </div>
@@ -432,7 +444,6 @@ function Dashboard() {
           </div>
 
           {servingQueue ? (
-
             <div className="current-customer">
 
               <div className="customer-info">
@@ -444,25 +455,21 @@ function Dashboard() {
                 </div>
 
                 <div>
-
                   <span>Customer</span>
 
                   <strong>
                     {servingQueue.customerName}
                   </strong>
-
                 </div>
 
               </div>
 
               <div className="customer-service">
-
                 <span>Service</span>
 
                 <strong>
                   {servingQueue.service}
                 </strong>
-
               </div>
 
               <button
@@ -476,9 +483,7 @@ function Dashboard() {
               </button>
 
             </div>
-
           ) : (
-
             <div className="no-current-customer">
 
               <div className="empty-icon">
@@ -486,20 +491,16 @@ function Dashboard() {
               </div>
 
               <div>
-
                 <h3>
                   No Customer Being Served
                 </h3>
 
                 <p>
-                  Call the next waiting customer
-                  to begin a service.
+                  Call the next waiting customer to begin a service.
                 </p>
-
               </div>
 
             </div>
-
           )}
 
         </div>
@@ -509,13 +510,11 @@ function Dashboard() {
         <div className="next-customer-section">
 
           <div>
-
             <span className="section-tag">
               NEXT CUSTOMER
             </span>
 
             {nextWaitingQueue ? (
-
               <>
                 <h2>
                   {nextWaitingQueue.queueNumber}
@@ -527,13 +526,10 @@ function Dashboard() {
                   {nextWaitingQueue.service}
                 </p>
               </>
-
             ) : (
-
               <h2>
                 No Waiting Customers
               </h2>
-
             )}
 
           </div>
@@ -559,7 +555,6 @@ function Dashboard() {
           <div className="table-header">
 
             <div>
-
               <span className="section-tag">
                 TODAY&apos;S QUEUE
               </span>
@@ -567,7 +562,6 @@ function Dashboard() {
               <h2>
                 Customer Queue
               </h2>
-
             </div>
 
             <span className="queue-count">
@@ -576,16 +570,11 @@ function Dashboard() {
 
           </div>
 
-          {/* ================= LOADING ================= */}
-
           {loading ? (
-
             <div className="dashboard-loading">
               Loading queue data...
             </div>
-
           ) : queues.length === 0 ? (
-
             <div className="dashboard-empty">
 
               <div className="empty-icon">
@@ -597,20 +586,16 @@ function Dashboard() {
               </h3>
 
               <p>
-                Customers who register for a queue
-                will appear here.
+                Customers who register for a queue will appear here.
               </p>
 
             </div>
-
           ) : (
-
             <div className="table-wrapper">
 
               <table>
 
                 <thead>
-
                   <tr>
                     <th>Queue</th>
                     <th>Customer</th>
@@ -619,7 +604,6 @@ function Dashboard() {
                     <th>Status</th>
                     <th>Action</th>
                   </tr>
-
                 </thead>
 
                 <tbody>
@@ -643,13 +627,10 @@ function Dashboard() {
                       </td>
 
                       <td>
-                        {formatTime(
-                          queue.createdAt
-                        )}
+                        {formatTime(queue.createdAt)}
                       </td>
 
                       <td>
-
                         <span
                           className={`status-badge ${getStatusClass(
                             queue.status
@@ -657,77 +638,77 @@ function Dashboard() {
                         >
                           {queue.status}
                         </span>
-
                       </td>
 
                       <td>
 
                         {queue.status === "Waiting" && (
+                          <>
+                            <button
+                              className="table-action call"
+                              onClick={() =>
+                                updateQueueStatus(
+                                  queue._id,
+                                  "Serving"
+                                )
+                              }
+                              disabled={
+                                actionLoading ||
+                                !!servingQueue
+                              }
+                            >
+                              Call
+                            </button>
 
-                          <button
-                            className="table-action call"
-                            onClick={() =>
-                              updateQueueStatus(
-                                queue._id,
-                                "Serving"
-                              )
-                            }
-                            disabled={
-                              actionLoading ||
-                              !!servingQueue
-                            }
-                          >
-                            Call
-                          </button>
-
+                            <button
+                              className="table-action cancel"
+                              onClick={() =>
+                                handleCancel(queue)
+                              }
+                              disabled={actionLoading}
+                            >
+                              Cancel
+                            </button>
+                          </>
                         )}
 
                         {queue.status === "Serving" && (
+                          <>
+                            <button
+                              className="table-action complete"
+                              onClick={() =>
+                                updateQueueStatus(
+                                  queue._id,
+                                  "Completed"
+                                )
+                              }
+                              disabled={actionLoading}
+                            >
+                              Complete
+                            </button>
 
-                          <button
-                            className="table-action complete"
-                            onClick={() =>
-                              updateQueueStatus(
-                                queue._id,
-                                "Completed"
-                              )
-                            }
-                            disabled={actionLoading}
-                          >
-                            Complete
-                          </button>
-
-                        )}
-
-                        {(queue.status === "Waiting" ||
-                          queue.status === "Serving") && (
-
-                          <button
-                            className="table-action cancel"
-                            onClick={() =>
-                              handleCancel(queue)
-                            }
-                            disabled={actionLoading}
-                          >
-                            Cancel
-                          </button>
-
+                            <button
+                              className="table-action cancel"
+                              onClick={() =>
+                                handleCancel(queue)
+                              }
+                              disabled={actionLoading}
+                            >
+                              Cancel
+                            </button>
+                          </>
                         )}
 
                         {queue.status === "Completed" && (
-
                           <span className="action-done">
                             Done
                           </span>
-
                         )}
 
                         {queue.status === "Cancelled" && (
-
                           <span className="action-done">
                             Cancelled
                           </span>
-
                         )}
 
                       </td>
@@ -741,7 +722,6 @@ function Dashboard() {
               </table>
 
             </div>
-
           )}
 
         </div>

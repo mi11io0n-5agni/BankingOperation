@@ -1,24 +1,40 @@
+
 import express from "express";
 
 import {
   createQueue,
-  getQueues,
+  getAllQueues,
   getQueueByNumber,
   updateQueueStatus,
 } from "../controllers/queueController.js";
 
+import protect from "../middleware/authMiddleware.js";
+
 const router = express.Router();
 
-// Create a new queue
+// ==========================================
+// PUBLIC CUSTOMER ROUTES
+// ==========================================
+
+// Create a new queue number
 router.post("/", createQueue);
 
-// Get all queues
-router.get("/", getQueues);
-
-// Get queue by queue number
+// Check queue status using queue number
 router.get("/:queueNumber", getQueueByNumber);
 
+// ==========================================
+// PROTECTED EMPLOYEE ROUTES
+// ==========================================
+
+// Get all queues
+router.get("/", protect, getAllQueues);
+
 // Update queue status
-router.patch("/:id/status", updateQueueStatus);
+router.patch(
+  "/:id/status",
+  protect,
+  updateQueueStatus
+);
 
 export default router;
+

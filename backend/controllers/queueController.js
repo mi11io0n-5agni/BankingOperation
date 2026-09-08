@@ -17,17 +17,18 @@ export const createQueue = async (req, res) => {
     }
 
     // Find the latest queue number
-    const latestQueue = await Queue.findOne()
-      .sort({ createdAt: -1 });
+    const latestQueue = await Queue.findOne().sort({ createdAt: -1 });
 
     let nextNumber = 1;
 
-    if (latestQueue) {
-      const lastNumber = parseInt(
-        latestQueue.queueNumber.split("-")[1]
-      );
-
-      nextNumber = lastNumber + 1;
+    if (latestQueue && latestQueue.queueNumber) {
+      const parts = latestQueue.queueNumber.split("-");
+      if (parts.length > 1) {
+        const lastNumber = parseInt(parts[1], 10);
+        if (!isNaN(lastNumber)) {
+          nextNumber = lastNumber + 1;
+        }
+      }
     }
 
     // Generate queue number
@@ -59,7 +60,7 @@ export const createQueue = async (req, res) => {
 // GET /api/queues
 // ==========================================
 
-export const getQueues = async (req, res) => {
+export const getAllQueues = async (req, res) => {
   try {
     const queues = await Queue.find().sort({
       createdAt: -1,
@@ -77,6 +78,9 @@ export const getQueues = async (req, res) => {
     });
   }
 };
+
+// Export alias in case any file imports getQueues
+export const getQueues = getAllQueues;
 
 // ==========================================
 // GET ONE QUEUE BY NUMBER
