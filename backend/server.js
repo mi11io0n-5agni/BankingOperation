@@ -4,30 +4,60 @@ import dotenv from "dotenv";
 
 import connectDB from "./config/db.js";
 import queueRoutes from "./routes/queueRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 
 const app = express();
 
-// Connect to MongoDB
+// ==========================================
+// DATABASE
+// ==========================================
+
 connectDB();
 
-// Middleware
+// ==========================================
+// MIDDLEWARE
+// ==========================================
+
 app.use(cors());
+
 app.use(express.json());
 
-// Routes
-app.use("/api/queues", queueRoutes);
+// ==========================================
+// ROUTES
+// ==========================================
 
-// Test route
+app.use(
+  "/api/queues",
+  queueRoutes
+);
+
+app.use(
+  "/api/auth",
+  authRoutes
+);
+
+// ==========================================
+// TEST ROUTE
+// ==========================================
+
 app.get("/", (req, res) => {
   res.json({
-    message: "COOPBank Queue Management API is running",
+    message:
+      "COOPBank Queue Management API is running",
   });
 });
 
-const PORT = process.env.PORT || 5000;
+// ==========================================
+// SERVER
+// ==========================================
+
+const PORT =
+  process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(
+    `Server is running on port ${PORT}`
+  );
 });
