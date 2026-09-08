@@ -80,7 +80,50 @@ export const getAllQueues = async (req, res) => {
 };
 
 // Export alias in case any file imports getQueues
-export const getQueues = getAllQueues;
+export const getQueues = async (req, res) => {
+  try {
+    // Admin can see all queues
+    if (req.user.role === "Admin") {
+      const queues = await Queue.find()
+        .populate("servedBy", "name email role")
+        .sort({ createdAt: -1 });
+
+      return res.status(200).json({
+        count: queues.length,
+        queues,
+      });
+    }
+
+    // Employee must have an assigned service
+    if (!req.user.service) {
+      return res.status(400).json({
+        message:
+          "No service has been assigned to your employee account.",
+      });
+    }
+
+    // Employee sees only queues for their assigned service
+    const queues = await Queue.find({
+      service: req.user.service,
+    })
+      .populate("servedBy", "name email role")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      count: queues.length,
+      queues,
+    });
+  } catch (error) {
+    console.error(
+      "Get Queues Error:",
+      error.message
+    );
+
+    res.status(500).json({
+      message: "Server error while getting queues",
+    });
+  }
+};
 
 // ==========================================
 // GET ONE QUEUE BY NUMBER
@@ -133,14 +176,7 @@ export const updateQueueStatus = async (req, res) => {
       });
     }
 
-    const queue = await Queue.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const queue = await Queue.findById(req.params.id);
 
     if (!queue) {
       return res.status(404).json({
@@ -148,12 +184,44 @@ export const updateQueueStatus = async (req, res) => {
       });
     }
 
+    // Admin can manage any queue
+    // Employee can only manage their assigned service
+    if (
+      req.user.role !== "Admin" &&
+      queue.service !== req.user.service
+    ) {
+      return res.status(403).json({
+        message:
+          "You are not authorized to manage this service queue.",
+      });
+    }
+
+    if (status === "Serving") {
+      queue.status = "Serving";
+      queue.servedBy = req.user._id;
+    } else if (status === "Completed") {
+      queue.status = "Completed";
+    } else if (status === "Cancelled") {
+      queue.status = "Cancelled";
+    } else if (status === "Waiting") {
+      queue.status = "Waiting";
+      queue.servedBy = null;
+    }
+
+    await queue.save();
+
+    const updatedQueue = await Queue.findById(queue._id)
+      .populate("servedBy", "name email role");
+
     res.status(200).json({
       message: "Queue status updated successfully",
-      queue,
+      queue: updatedQueue,
     });
   } catch (error) {
-    console.error("Update Queue Error:", error.message);
+    console.error(
+      "Update Queue Error:",
+      error.message
+    );
 
     res.status(500).json({
       message: "Server error while updating queue",

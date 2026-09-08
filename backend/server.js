@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import queueRoutes from "./routes/queueRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 
@@ -24,19 +25,12 @@ app.use(cors());
 
 app.use(express.json());
 
-// ==========================================
 // ROUTES
-// ==========================================
 
-app.use(
-  "/api/queues",
-  queueRoutes
-);
+app.use("/api/queues",queueRoutes);
+app.use("/api/admin", adminRoutes);
 
-app.use(
-  "/api/auth",
-  authRoutes
-);
+app.use("/api/auth",authRoutes);
 
 // ==========================================
 // TEST ROUTE

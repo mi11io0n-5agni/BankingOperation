@@ -700,6 +700,28 @@ td {
   background: #b91c1c;
 }
 
+.assigned-service {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 13px;
+  border: 1px solid #dcfce7;
+  border-radius: 8px;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 13px;
+}
+
+.assigned-service span {
+  color: #6b7280;
+}
+
+.assigned-service strong {
+  color: #00843d;
+}
+
+
 /* ================= RESPONSIVE ================= */
 
 @media (max-width: 800px) {

@@ -28,13 +28,25 @@ const userSchema = new mongoose.Schema(
       enum: ["Employee", "Admin"],
       default: "Employee",
     },
+
+    service: {
+      type: String,
+      enum: [
+        "Account Opening",
+        "Deposit",
+        "Withdrawal",
+        "Mobile Banking",
+        "Account Harmonization",
+        "Customer Support",
+      ],
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// Hash password before saving
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) {
     return;
@@ -48,7 +60,6 @@ userSchema.pre("save", async function () {
   );
 });
 
-// Compare entered password with hashed password
 userSchema.methods.matchPassword = async function (
   enteredPassword
 ) {

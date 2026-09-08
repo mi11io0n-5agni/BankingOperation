@@ -327,15 +327,22 @@ function Dashboard() {
             <h1>Queue Management</h1>
 
             <p>
-              Welcome,{" "}
-              <strong>
+            Welcome,{" "}
+            <strong>
                 {user?.name || "Employee"}
-              </strong>
+            </strong>
             </p>
 
             <p>
-              Manage customer queues and banking service operations.
+            Manage customer queues and banking service operations.
             </p>
+
+            {user?.service && (
+            <div className="assigned-service">
+                <span>Assigned Service</span>
+                <strong>{user.service}</strong>
+            </div>
+            )}
           </div>
 
           <div className="dashboard-header-actions">

@@ -42,6 +42,13 @@ const queueSchema = new mongoose.Schema(
       ],
       default: "Waiting",
     },
+
+    // Employee currently serving this customer
+    servedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
   },
   {
     timestamps: true,
