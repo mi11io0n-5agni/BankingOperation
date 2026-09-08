@@ -1,18 +1,16 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
 function Login() {
-  const [formData, setFormData] =
-    useState({
-      email: "",
-      password: "",
-    });
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-  const [
-    showPassword,
-    setShowPassword,
-  ] = useState(false);
+  const [showPassword, setShowPassword] =
+    useState(false);
 
   const [loading, setLoading] =
     useState(false);
@@ -27,10 +25,7 @@ function Login() {
   // ==========================================
 
   const handleChange = (event) => {
-    const {
-      name,
-      value,
-    } = event.target;
+    const { name, value } = event.target;
 
     setFormData((previous) => ({
       ...previous,
@@ -42,43 +37,38 @@ function Login() {
   // LOGIN
   // ==========================================
 
-  const handleSubmit = async (
-    event
-  ) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     setLoading(true);
     setError("");
 
     try {
-      const response =
-        await fetch(
-          "http://localhost:5000/api/auth/login",
-          {
-            method: "POST",
+      const response = await fetch(
+        "http://localhost:5000/api/auth/login",
+        {
+          method: "POST",
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-            body: JSON.stringify(
-              formData
-            ),
-          }
-        );
+          body: JSON.stringify(formData),
+        }
+      );
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.message ||
-            "Login failed."
+          data.message || "Login failed."
         );
       }
 
-      // Save authentication
+      // ==========================================
+      // SAVE AUTHENTICATION DATA
+      // ==========================================
+
       localStorage.setItem(
         "coopbankToken",
         data.token
@@ -89,21 +79,24 @@ function Login() {
         JSON.stringify(data.user)
       );
 
-      navigate(
-        "/dashboard",
-        {
+      // ==========================================
+      // ROLE-BASED REDIRECTION
+      // ==========================================
+
+      if (data.user.role === "Admin") {
+        navigate("/admin/dashboard", {
           replace: true,
-        }
-      );
+        });
+      } else {
+        navigate("/dashboard", {
+          replace: true,
+        });
+      }
     } catch (error) {
-      console.error(
-        "Login Error:",
-        error
-      );
+      console.error("Login Error:", error);
 
       setError(
-        error.message ||
-          "Unable to login."
+        error.message || "Unable to login."
       );
     } finally {
       setLoading(false);
@@ -133,7 +126,7 @@ function Login() {
           <div className="login-header">
 
             <span className="section-tag">
-              EMPLOYEE PORTAL
+              STAFF PORTAL
             </span>
 
             <h2>Welcome Back</h2>
@@ -158,12 +151,8 @@ function Login() {
                 type="email"
                 name="email"
                 placeholder="Enter your email address"
-                value={
-                  formData.email
-                }
-                onChange={
-                  handleChange
-                }
+                value={formData.email}
+                onChange={handleChange}
                 required
               />
 
@@ -186,12 +175,8 @@ function Login() {
                   }
                   name="password"
                   placeholder="Enter your password"
-                  value={
-                    formData.password
-                  }
-                  onChange={
-                    handleChange
-                  }
+                  value={formData.password}
+                  onChange={handleChange}
                   required
                 />
 
@@ -199,9 +184,7 @@ function Login() {
                   type="button"
                   className="show-password-btn"
                   onClick={() =>
-                    setShowPassword(
-                      !showPassword
-                    )
+                    setShowPassword(!showPassword)
                   }
                 >
                   {showPassword
@@ -216,13 +199,13 @@ function Login() {
             <div className="login-options">
 
               <label className="remember-me">
-                <input
-                  type="checkbox"
-                />
+
+                <input type="checkbox" />
 
                 <span>
                   Remember me
                 </span>
+
               </label>
 
               <button
@@ -249,9 +232,7 @@ function Login() {
                 ? "Signing In..."
                 : "Sign In"}
 
-              {!loading && (
-                <span>→</span>
-              )}
+              {!loading && <span>→</span>}
             </button>
 
           </form>
@@ -262,7 +243,7 @@ function Login() {
 
             <p>
               Secure access for authorized
-              bank employees only.
+              bank staff only.
             </p>
 
           </div>
