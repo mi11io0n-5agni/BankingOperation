@@ -43,6 +43,8 @@ function GetQueue() {
   });
 
   const [ticket, setTicket] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -53,32 +55,50 @@ function GetQueue() {
     }));
   };
 
-  const generateQueueNumber = () => {
-    const number = Math.floor(Math.random() * 900) + 100;
-
-    return `A-${number}`;
-  };
-
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!formData.customerName.trim() || !formData.service) {
-      return;
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/queues",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to create queue"
+        );
+      }
+
+      // Save the real queue returned from MongoDB
+      setTicket(data.queue);
+
+    } catch (error) {
+      console.error(error);
+
+      setError(
+        error.message ||
+          "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
-
-    const newTicket = {
-      queueNumber: generateQueueNumber(),
-      customerName: formData.customerName,
-      phone: formData.phone,
-      service: formData.service,
-      status: "Waiting",
-    };
-
-    setTicket(newTicket);
   };
 
   const handleNewQueue = () => {
     setTicket(null);
+    setError("");
 
     setFormData({
       customerName: "",
@@ -86,6 +106,10 @@ function GetQueue() {
       service: "",
     });
   };
+
+  // ===============================
+  // QUEUE TICKET
+  // ===============================
 
   if (ticket) {
     return (
@@ -162,6 +186,10 @@ function GetQueue() {
       </main>
     );
   }
+
+  // ===============================
+  // QUEUE FORM
+  // ===============================
 
   return (
     <main className="get-queue-page">
@@ -254,12 +282,23 @@ function GetQueue() {
             </div>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="form-error">
+              {error}
+            </div>
+          )}
+
           <button
             type="submit"
             className="generate-btn"
+            disabled={loading}
           >
-            Generate Queue Number
-            <span>→</span>
+            {loading
+              ? "Generating Queue..."
+              : "Generate Queue Number"}
+
+            {!loading && <span>→</span>}
           </button>
         </form>
 

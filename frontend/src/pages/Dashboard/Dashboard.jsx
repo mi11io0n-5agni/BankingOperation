@@ -1,110 +1,213 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./Dashboard.css";
 
-const initialQueue = [
-  {
-    id: 1,
-    queueNumber: "A-101",
-    customerName: "Abebe Kebede",
-    service: "Account Opening",
-    status: "Waiting",
-    time: "09:15 AM",
-  },
-  {
-    id: 2,
-    queueNumber: "A-102",
-    customerName: "Hana Gemechu",
-    service: "Deposit",
-    status: "Waiting",
-    time: "09:20 AM",
-  },
-  {
-    id: 3,
-    queueNumber: "A-103",
-    customerName: "Mohammed Ali",
-    service: "Mobile Banking",
-    status: "Serving",
-    time: "09:25 AM",
-  },
-  {
-    id: 4,
-    queueNumber: "A-104",
-    customerName: "Sara Tesfaye",
-    service: "Withdrawal",
-    status: "Waiting",
-    time: "09:30 AM",
-  },
-  {
-    id: 5,
-    queueNumber: "A-105",
-    customerName: "Daniel Bekele",
-    service: "Customer Support",
-    status: "Completed",
-    time: "09:35 AM",
-  },
-];
-
 function Dashboard() {
-  const [queue, setQueue] = useState(initialQueue);
+  const [queues, setQueues] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const waitingCustomers = queue.filter(
-    (customer) => customer.status === "Waiting"
+  // ==========================================
+  // GET ALL QUEUES
+  // ==========================================
+
+  const fetchQueues = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await fetch(
+        "http://localhost:5000/api/queues"
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to load queues"
+        );
+      }
+
+      setQueues(data.queues || []);
+    } catch (error) {
+      console.error("Fetch Queues Error:", error);
+
+      setError(
+        "Unable to load queue data. Please make sure the backend is running."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ==========================================
+  // LOAD QUEUES WHEN PAGE OPENS
+  // ==========================================
+
+  useEffect(() => {
+    fetchQueues();
+  }, []);
+
+  // ==========================================
+  // UPDATE QUEUE STATUS
+  // ==========================================
+
+  const updateQueueStatus = async (id, status) => {
+    try {
+      setActionLoading(true);
+      setError("");
+
+      const response = await fetch(
+        `http://localhost:5000/api/queues/${id}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to update queue"
+        );
+      }
+
+      // Reload the queue list after update
+      await fetchQueues();
+    } catch (error) {
+      console.error("Update Queue Error:", error);
+
+      setError(
+        error.message ||
+          "Unable to update queue status."
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // ==========================================
+  // FIND CURRENT SERVING CUSTOMER
+  // ==========================================
+
+  const servingQueue = queues.find(
+    (queue) => queue.status === "Serving"
   );
 
-  const servingCustomer = queue.find(
-    (customer) => customer.status === "Serving"
-  );
+  // ==========================================
+  // FIND NEXT WAITING CUSTOMER
+  // ==========================================
 
-  const completedCustomers = queue.filter(
-    (customer) => customer.status === "Completed"
-  );
+  const nextWaitingQueue = [...queues]
+    .filter((queue) => queue.status === "Waiting")
+    .sort(
+      (a, b) =>
+        new Date(a.createdAt) -
+        new Date(b.createdAt)
+    )[0];
 
-  // Call the next waiting customer
-  const handleCallNext = () => {
-    if (servingCustomer) {
-      alert("Please complete the customer currently being served first.");
+  // ==========================================
+  // CALL NEXT CUSTOMER
+  // ==========================================
+
+  const handleCallNext = async () => {
+    if (!nextWaitingQueue) {
+      alert("There are no waiting customers.");
       return;
     }
 
-    const nextCustomer = queue.find(
-      (customer) => customer.status === "Waiting"
-    );
-
-    if (!nextCustomer) {
-      alert("There are no customers waiting.");
+    if (servingQueue) {
+      alert(
+        `Customer ${servingQueue.queueNumber} is currently being served. Complete that service first.`
+      );
       return;
     }
 
-    setQueue((previousQueue) =>
-      previousQueue.map((customer) =>
-        customer.id === nextCustomer.id
-          ? { ...customer, status: "Serving" }
-          : customer
-      )
+    await updateQueueStatus(
+      nextWaitingQueue._id,
+      "Serving"
     );
   };
 
-  // Complete service
-  const handleComplete = (id) => {
-    setQueue((previousQueue) =>
-      previousQueue.map((customer) =>
-        customer.id === id
-          ? { ...customer, status: "Completed" }
-          : customer
-      )
+  // ==========================================
+  // COMPLETE CURRENT SERVICE
+  // ==========================================
+
+  const handleComplete = async () => {
+    if (!servingQueue) {
+      alert("There is no customer currently being served.");
+      return;
+    }
+
+    await updateQueueStatus(
+      servingQueue._id,
+      "Completed"
     );
   };
 
-  // Cancel a queue
-  const handleCancel = (id) => {
-    setQueue((previousQueue) =>
-      previousQueue.map((customer) =>
-        customer.id === id
-          ? { ...customer, status: "Cancelled" }
-          : customer
-      )
+  // ==========================================
+  // CANCEL QUEUE
+  // ==========================================
+
+  const handleCancel = async (queue) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to cancel queue ${queue.queueNumber}?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    await updateQueueStatus(
+      queue._id,
+      "Cancelled"
     );
   };
+
+  // ==========================================
+  // STATISTICS
+  // ==========================================
+
+  const waitingCount = queues.filter(
+    (queue) => queue.status === "Waiting"
+  ).length;
+
+  const servingCount = queues.filter(
+    (queue) => queue.status === "Serving"
+  ).length;
+
+  const completedCount = queues.filter(
+    (queue) => queue.status === "Completed"
+  ).length;
+
+  const cancelledCount = queues.filter(
+    (queue) => queue.status === "Cancelled"
+  ).length;
+
+  // ==========================================
+  // FORMAT TIME
+  // ==========================================
+
+  const formatTime = (date) => {
+    if (!date) {
+      return "-";
+    }
+
+    return new Date(date).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  // ==========================================
+  // STATUS CLASS
+  // ==========================================
 
   const getStatusClass = (status) => {
     return status.toLowerCase();
@@ -112,222 +215,391 @@ function Dashboard() {
 
   return (
     <main className="dashboard-page">
-      <div className="dashboard-container">
 
-        {/* Dashboard Header */}
-        <section className="dashboard-header">
+      {/* ================= HEADER ================= */}
+
+      <section className="dashboard-container">
+
+        <div className="dashboard-header">
+
           <div>
-            <span className="section-tag">EMPLOYEE DASHBOARD</span>
+            <span className="section-tag">
+              EMPLOYEE DASHBOARD
+            </span>
 
             <h1>Queue Management</h1>
 
             <p>
-              Manage customer queues and monitor banking services.
+              Manage customer queues and banking
+              service operations.
             </p>
+          </div>
+
+          <button
+            className="refresh-btn"
+            onClick={fetchQueues}
+            disabled={loading || actionLoading}
+          >
+            ↻ Refresh
+          </button>
+
+        </div>
+
+        {/* ================= ERROR ================= */}
+
+        {error && (
+          <div className="dashboard-error">
+            {error}
+          </div>
+        )}
+
+        {/* ================= STATISTICS ================= */}
+
+        <div className="dashboard-stats">
+
+          <div className="stat-card">
+            <div className="stat-icon">
+              👥
+            </div>
+
+            <div>
+              <span>Waiting</span>
+              <strong>{waitingCount}</strong>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon">
+              📞
+            </div>
+
+            <div>
+              <span>Serving</span>
+              <strong>{servingCount}</strong>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon">
+              ✓
+            </div>
+
+            <div>
+              <span>Completed</span>
+              <strong>{completedCount}</strong>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon">
+              ✕
+            </div>
+
+            <div>
+              <span>Cancelled</span>
+              <strong>{cancelledCount}</strong>
+            </div>
+          </div>
+
+        </div>
+
+        {/* ================= CURRENT CUSTOMER ================= */}
+
+        <div className="current-service-card">
+
+          <div className="current-service-header">
+
+            <div>
+              <span className="section-tag">
+                CURRENT SERVICE
+              </span>
+
+              <h2>
+                {servingQueue
+                  ? servingQueue.queueNumber
+                  : "No Customer"}
+              </h2>
+            </div>
+
+            {servingQueue && (
+              <span className="status-badge serving">
+                Serving
+              </span>
+            )}
+
+          </div>
+
+          {servingQueue ? (
+            <div className="current-customer">
+
+              <div className="customer-info">
+
+                <div className="customer-avatar">
+                  {servingQueue.customerName
+                    .charAt(0)
+                    .toUpperCase()}
+                </div>
+
+                <div>
+                  <span>Customer</span>
+
+                  <strong>
+                    {servingQueue.customerName}
+                  </strong>
+                </div>
+
+              </div>
+
+              <div className="customer-service">
+
+                <span>Service</span>
+
+                <strong>
+                  {servingQueue.service}
+                </strong>
+
+              </div>
+
+              <button
+                className="complete-btn"
+                onClick={handleComplete}
+                disabled={actionLoading}
+              >
+                {actionLoading
+                  ? "Updating..."
+                  : "✓ Complete Service"}
+              </button>
+
+            </div>
+          ) : (
+            <div className="no-current-customer">
+
+              <div className="empty-icon">
+                ⏳
+              </div>
+
+              <div>
+                <h3>No Customer Being Served</h3>
+
+                <p>
+                  Call the next waiting customer to
+                  begin a service.
+                </p>
+              </div>
+
+            </div>
+          )}
+
+        </div>
+
+        {/* ================= CALL NEXT ================= */}
+
+        <div className="next-customer-section">
+
+          <div>
+            <span className="section-tag">
+              NEXT CUSTOMER
+            </span>
+
+            {nextWaitingQueue ? (
+              <>
+                <h2>
+                  {nextWaitingQueue.queueNumber}
+                </h2>
+
+                <p>
+                  {nextWaitingQueue.customerName}
+                  {" • "}
+                  {nextWaitingQueue.service}
+                </p>
+              </>
+            ) : (
+              <h2>
+                No Waiting Customers
+              </h2>
+            )}
           </div>
 
           <button
             className="call-next-btn"
             onClick={handleCallNext}
+            disabled={
+              actionLoading ||
+              !nextWaitingQueue ||
+              !!servingQueue
+            }
           >
-            ▶ Call Next Customer
+            📞 Call Next Customer
           </button>
-        </section>
 
-        {/* Statistics Cards */}
-        <section className="stats-grid">
+        </div>
 
-          <div className="stat-card">
-            <div className="stat-icon waiting-icon">
-              ⏳
-            </div>
+        {/* ================= QUEUE TABLE ================= */}
 
-            <div>
-              <span>Waiting Customers</span>
-              <strong>{waitingCustomers.length}</strong>
-            </div>
-          </div>
+        <div className="queue-table-card">
 
-          <div className="stat-card">
-            <div className="stat-icon serving-icon">
-              👤
-            </div>
+          <div className="table-header">
 
             <div>
-              <span>Currently Serving</span>
-              <strong>
-                {servingCustomer ? 1 : 0}
-              </strong>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon completed-icon">
-              ✓
-            </div>
-
-            <div>
-              <span>Completed Today</span>
-              <strong>{completedCustomers.length}</strong>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon total-icon">
-              📊
-            </div>
-
-            <div>
-              <span>Total Customers</span>
-              <strong>{queue.length}</strong>
-            </div>
-          </div>
-
-        </section>
-
-        {/* Currently Serving */}
-        <section className="currently-serving-section">
-
-          <div className="section-title">
-            <h2>Currently Serving</h2>
-            <span className="live-label">● LIVE</span>
-          </div>
-
-          {servingCustomer ? (
-            <div className="serving-customer-card">
-
-              <div className="serving-number">
-                {servingCustomer.queueNumber}
-              </div>
-
-              <div className="serving-customer-info">
-                <h3>{servingCustomer.customerName}</h3>
-                <p>{servingCustomer.service}</p>
-              </div>
-
-              <button
-                className="complete-btn"
-                onClick={() =>
-                  handleComplete(servingCustomer.id)
-                }
-              >
-                ✓ Complete Service
-              </button>
-
-            </div>
-          ) : (
-            <div className="no-serving">
-              <p>No customer is currently being served.</p>
-
-              <span>
-                Click "Call Next Customer" to start serving.
+              <span className="section-tag">
+                TODAY&apos;S QUEUE
               </span>
-            </div>
-          )}
 
-        </section>
-
-        {/* Queue Table */}
-        <section className="queue-management">
-
-          <div className="section-title">
-            <div>
               <h2>Customer Queue</h2>
-              <p>
-                View and manage all customer service requests.
-              </p>
             </div>
 
             <span className="queue-count">
-              {waitingCustomers.length} Waiting
+              {queues.length} Customers
             </span>
+
           </div>
 
-          <div className="table-wrapper">
+          {loading ? (
+            <div className="dashboard-loading">
+              Loading queue data...
+            </div>
+          ) : queues.length === 0 ? (
+            <div className="dashboard-empty">
 
-            <table>
-              <thead>
-                <tr>
-                  <th>Queue No.</th>
-                  <th>Customer</th>
-                  <th>Service</th>
-                  <th>Time</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
+              <div className="empty-icon">
+                📋
+              </div>
 
-              <tbody>
+              <h3>No Queue Records</h3>
 
-                {queue.map((customer) => (
-                  <tr key={customer.id}>
+              <p>
+                Customers who register for a queue
+                will appear here.
+              </p>
 
-                    <td>
-                      <strong className="queue-number">
-                        {customer.queueNumber}
-                      </strong>
-                    </td>
+            </div>
+          ) : (
+            <div className="table-wrapper">
 
-                    <td>{customer.customerName}</td>
+              <table>
 
-                    <td>{customer.service}</td>
-
-                    <td>{customer.time}</td>
-
-                    <td>
-                      <span
-                        className={`status-badge ${getStatusClass(
-                          customer.status
-                        )}`}
-                      >
-                        {customer.status}
-                      </span>
-                    </td>
-
-                    <td className="action-cell">
-
-                      {customer.status === "Waiting" && (
-                        <button
-                          className="cancel-btn"
-                          onClick={() =>
-                            handleCancel(customer.id)
-                          }
-                        >
-                          Cancel
-                        </button>
-                      )}
-
-                      {customer.status === "Serving" && (
-                        <button
-                          className="table-complete-btn"
-                          onClick={() =>
-                            handleComplete(customer.id)
-                          }
-                        >
-                          Complete
-                        </button>
-                      )}
-
-                      {(customer.status === "Completed" ||
-                        customer.status === "Cancelled") && (
-                        <span className="no-action">
-                          —
-                        </span>
-                      )}
-
-                    </td>
-
+                <thead>
+                  <tr>
+                    <th>Queue</th>
+                    <th>Customer</th>
+                    <th>Service</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Action</th>
                   </tr>
-                ))}
+                </thead>
 
-              </tbody>
-            </table>
+                <tbody>
 
-          </div>
+                  {queues.map((queue) => (
+                    <tr key={queue._id}>
 
-        </section>
+                      <td>
+                        <strong className="queue-number">
+                          {queue.queueNumber}
+                        </strong>
+                      </td>
 
-      </div>
+                      <td>
+                        {queue.customerName}
+                      </td>
+
+                      <td>
+                        {queue.service}
+                      </td>
+
+                      <td>
+                        {formatTime(
+                          queue.createdAt
+                        )}
+                      </td>
+
+                      <td>
+                        <span
+                          className={`status-badge ${getStatusClass(
+                            queue.status
+                          )}`}
+                        >
+                          {queue.status}
+                        </span>
+                      </td>
+
+                      <td>
+
+                        {queue.status === "Waiting" && (
+                          <button
+                            className="table-action call"
+                            onClick={() =>
+                              updateQueueStatus(
+                                queue._id,
+                                "Serving"
+                              )
+                            }
+                            disabled={
+                              actionLoading ||
+                              !!servingQueue
+                            }
+                          >
+                            Call
+                          </button>
+                        )}
+
+                        {queue.status === "Serving" && (
+                          <button
+                            className="table-action complete"
+                            onClick={() =>
+                              updateQueueStatus(
+                                queue._id,
+                                "Completed"
+                              )
+                            }
+                            disabled={actionLoading}
+                          >
+                            Complete
+                          </button>
+                        )}
+
+                        {(queue.status === "Waiting" ||
+                          queue.status === "Serving") && (
+                          <button
+                            className="table-action cancel"
+                            onClick={() =>
+                              handleCancel(queue)
+                            }
+                            disabled={actionLoading}
+                          >
+                            Cancel
+                          </button>
+                        )}
+
+                        {queue.status === "Completed" && (
+                          <span className="action-done">
+                            Done
+                          </span>
+                        )}
+
+                        {queue.status === "Cancelled" && (
+                          <span className="action-done">
+                            Cancelled
+                          </span>
+                        )}
+
+                      </td>
+
+                    </tr>
+                  ))}
+
+                </tbody>
+
+              </table>
+
+            </div>
+          )}
+
+        </div>
+
+      </section>
+
     </main>
   );
 }

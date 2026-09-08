@@ -2,52 +2,76 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import "./QueueStatus.css";
 
-const demoQueue = {
-  "A-101": {
-    queueNumber: "A-101",
-    customerName: "Abebe Kebede",
-    service: "Account Opening",
-    status: "Waiting",
-    peopleAhead: 5,
-    estimatedWait: "15 minutes",
-  },
-  "A-102": {
-    queueNumber: "A-102",
-    customerName: "Hana Gemechu",
-    service: "Deposit",
-    status: "Serving",
-    peopleAhead: 0,
-    estimatedWait: "Now serving",
-  },
-  "A-103": {
-    queueNumber: "A-103",
-    customerName: "Mohammed Ali",
-    service: "Mobile Banking",
-    status: "Completed",
-    peopleAhead: 0,
-    estimatedWait: "Completed",
-  },
-};
-
 function QueueStatus() {
   const [queueNumber, setQueueNumber] = useState("");
   const [queue, setQueue] = useState(null);
   const [searched, setSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (event) => {
+  // ==========================================
+  // CHECK QUEUE STATUS
+  // ==========================================
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const number = queueNumber.trim().toUpperCase();
 
-    setQueue(demoQueue[number] || null);
-    setSearched(true);
+    if (!number) {
+      return;
+    }
+
+    setLoading(true);
+    setSearched(false);
+    setQueue(null);
+    setErrorMessage("");
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/queues/${number}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrorMessage(
+          data.message || "Queue number not found."
+        );
+
+        setSearched(true);
+        return;
+      }
+
+      setQueue(data);
+      setSearched(true);
+    } catch (error) {
+      console.error("Queue Status Error:", error);
+
+      setErrorMessage(
+        "Unable to connect to the server. Please make sure the backend is running."
+      );
+
+      setSearched(true);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // ==========================================
+  // CLEAR SEARCH
+  // ==========================================
 
   const handleClear = () => {
     setQueueNumber("");
     setQueue(null);
     setSearched(false);
+    setErrorMessage("");
   };
+
+  // ==========================================
+  // STATUS CLASS
+  // ==========================================
 
   const getStatusClass = (status) => {
     return status.toLowerCase();
@@ -57,19 +81,23 @@ function QueueStatus() {
     <main className="queue-status-page">
       <section className="queue-status-container">
 
-        {/* Page Heading */}
+        {/* ================= HEADING ================= */}
+
         <div className="status-heading">
-          <span className="section-tag">QUEUE TRACKING</span>
+          <span className="section-tag">
+            QUEUE TRACKING
+          </span>
 
           <h1>Check Your Queue Status</h1>
 
           <p>
-            Enter your queue number to see your current position
-            and service status.
+            Enter your queue number to see your current
+            position and service status.
           </p>
         </div>
 
-        {/* Search Form */}
+        {/* ================= SEARCH ================= */}
+
         <form
           className="status-search"
           onSubmit={handleSubmit}
@@ -84,14 +112,14 @@ function QueueStatus() {
               type="text"
               value={queueNumber}
               onChange={(event) =>
-                setQueueNumber(event.target.value)
+                setQueueNumber(event.target.value.toUpperCase())
               }
-              placeholder="Example: A-101"
+              placeholder="Example: A-001"
               required
             />
 
-            <button type="submit">
-              Check Status
+            <button type="submit" disabled={loading}>
+              {loading ? "Checking..." : "Check Status"}
             </button>
           </div>
 
@@ -100,13 +128,17 @@ function QueueStatus() {
           </small>
         </form>
 
-        {/* Result */}
+        {/* ================= RESULT ================= */}
+
         {searched && queue && (
           <div className="status-result">
+
+            {/* RESULT HEADER */}
 
             <div className="result-header">
               <div>
                 <span>Your Queue Number</span>
+
                 <h2>{queue.queueNumber}</h2>
               </div>
 
@@ -119,21 +151,53 @@ function QueueStatus() {
               </span>
             </div>
 
+            {/* DETAILS */}
+
             <div className="result-details">
 
               <div className="detail-item">
                 <span>Customer</span>
-                <strong>{queue.customerName}</strong>
+
+                <strong>
+                  {queue.customerName}
+                </strong>
               </div>
 
               <div className="detail-item">
                 <span>Service</span>
-                <strong>{queue.service}</strong>
+
+                <strong>
+                  {queue.service}
+                </strong>
+              </div>
+
+              {queue.phone && (
+                <div className="detail-item">
+                  <span>Phone</span>
+
+                  <strong>
+                    {queue.phone}
+                  </strong>
+                </div>
+              )}
+
+              <div className="detail-item">
+                <span>Registered</span>
+
+                <strong>
+                  {new Date(
+                    queue.createdAt
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </strong>
               </div>
 
             </div>
 
-            {/* Queue Position */}
+            {/* ================= WAITING ================= */}
+
             {queue.status === "Waiting" && (
               <div className="waiting-card">
 
@@ -142,49 +206,91 @@ function QueueStatus() {
                 </div>
 
                 <div>
-                  <span>Customers Ahead</span>
-                  <strong>{queue.peopleAhead}</strong>
+                  <span>Queue Status</span>
+
+                  <strong>
+                    Waiting
+                  </strong>
                 </div>
 
                 <div>
                   <span>Estimated Wait</span>
-                  <strong>{queue.estimatedWait}</strong>
+
+                  <strong>
+                    Please wait
+                  </strong>
                 </div>
 
               </div>
             )}
 
-            {/* Serving */}
+            {/* ================= SERVING ================= */}
+
             {queue.status === "Serving" && (
               <div className="serving-card">
+
                 <div className="serving-icon">
                   ✓
                 </div>
 
                 <div>
-                  <h3>It&apos;s Your Turn!</h3>
+                  <h3>
+                    It&apos;s Your Turn!
+                  </h3>
+
                   <p>
                     Please proceed to the service desk.
                   </p>
                 </div>
+
               </div>
             )}
 
-            {/* Completed */}
+            {/* ================= COMPLETED ================= */}
+
             {queue.status === "Completed" && (
               <div className="completed-card">
+
                 <div className="completed-icon">
                   ✓
                 </div>
 
                 <div>
-                  <h3>Service Completed</h3>
+                  <h3>
+                    Service Completed
+                  </h3>
+
                   <p>
                     Your banking service has been completed.
                   </p>
                 </div>
+
               </div>
             )}
+
+            {/* ================= CANCELLED ================= */}
+
+            {queue.status === "Cancelled" && (
+              <div className="completed-card">
+
+                <div className="completed-icon">
+                  ✕
+                </div>
+
+                <div>
+                  <h3>
+                    Queue Cancelled
+                  </h3>
+
+                  <p>
+                    This queue has been cancelled.
+                  </p>
+                </div>
+
+              </div>
+            )}
+
+            {/* CLEAR BUTTON */}
 
             <button
               className="clear-btn"
@@ -193,10 +299,12 @@ function QueueStatus() {
             >
               Check Another Queue
             </button>
+
           </div>
         )}
 
-        {/* Not Found */}
+        {/* ================= NOT FOUND ================= */}
+
         {searched && !queue && (
           <div className="not-found">
 
@@ -204,11 +312,13 @@ function QueueStatus() {
               ?
             </div>
 
-            <h2>Queue Number Not Found</h2>
+            <h2>
+              Queue Number Not Found
+            </h2>
 
             <p>
-              We couldn&apos;t find that queue number.
-              Please check your ticket and try again.
+              {errorMessage ||
+                "We couldn't find that queue number. Please check your ticket and try again."}
             </p>
 
             <button
@@ -221,23 +331,30 @@ function QueueStatus() {
           </div>
         )}
 
-        {/* Demo Information */}
+        {/* ================= DEMO INFO ================= */}
+
         {!searched && (
           <div className="demo-info">
-            <strong>Demo queue numbers</strong>
+
+            <strong>
+              Example queue numbers
+            </strong>
 
             <p>
-              Until the backend is connected, you can test
-              the page using:
+              Create a queue from the Get Queue page,
+              then enter its number here.
             </p>
 
             <div className="demo-numbers">
-              <span>A-101</span>
-              <span>A-102</span>
-              <span>A-103</span>
+              <span>A-001</span>
+              <span>A-002</span>
+              <span>A-003</span>
             </div>
+
           </div>
         )}
+
+        {/* ================= BACK LINK ================= */}
 
         <div className="back-link">
           <Link to="/get-queue">
