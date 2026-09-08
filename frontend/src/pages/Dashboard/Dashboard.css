@@ -680,6 +680,25 @@ td {
   font-size: 12px;
   font-weight: 600;
 }
+.dashboard-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logout-btn {
+  padding: 11px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #dc2626;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #b91c1c;
+}
 
 /* ================= RESPONSIVE ================= */
 
