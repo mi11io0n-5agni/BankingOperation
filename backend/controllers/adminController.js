@@ -180,3 +180,31 @@ export const deleteEmployee = async (req, res) => {
   }
 };
 
+// ==========================================
+// GET ALL QUEUES FOR ADMIN
+// ==========================================
+
+export const getAllQueues = async (req, res) => {
+  try {
+    const Queue = (await import("../models/Queue.js")).default;
+
+    const queues = await Queue.find()
+      .populate("servedBy", "name email role service")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      count: queues.length,
+      queues,
+    });
+  } catch (error) {
+    console.error(
+      "Get All Queues Error:",
+      error.message
+    );
+
+    res.status(500).json({
+      message:
+        "Server error while getting all queues.",
+    });
+  }
+};

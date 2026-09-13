@@ -294,7 +294,182 @@
   color: #374151;
 }
 
+/* ================= DASHBOARD SECTIONS ================= */
+
+.dashboard-section {
+  margin-bottom: 30px;
+}
+
+.section-heading {
+  margin-bottom: 20px;
+}
+
+.section-heading span {
+  color: #00843d;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.section-heading h2 {
+  margin: 6px 0 0;
+  color: #1f2937;
+  font-size: 24px;
+}
+
+/* ================= QUEUE STATISTICS ================= */
+
+.queue-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.queue-stat-card {
+  padding: 22px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
+}
+
+.queue-stat-card span {
+  display: block;
+  margin-bottom: 10px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.queue-stat-card strong {
+  font-size: 32px;
+}
+
+/* Total */
+
+.queue-stat-card.total strong {
+  color: #374151;
+}
+
+/* Waiting */
+
+.queue-stat-card.waiting {
+  background: #fffaf5;
+}
+
+.queue-stat-card.waiting strong {
+  color: #c2410c;
+}
+
+/* Serving */
+
+.queue-stat-card.serving {
+  background: #f0fdf4;
+}
+
+.queue-stat-card.serving strong {
+  color: #00843d;
+}
+
+/* Completed */
+
+.queue-stat-card.completed {
+  background: #eff6ff;
+}
+
+.queue-stat-card.completed strong {
+  color: #2563eb;
+}
+
+/* ================= SERVICE OVERVIEW ================= */
+
+.service-overview-card {
+  margin-bottom: 30px;
+  padding: 28px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+
+.service-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.service-stat-card {
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f8faf9;
+}
+
+.service-stat-card h3 {
+  margin: 0 0 18px;
+  color: #1f2937;
+  font-size: 16px;
+}
+
+.service-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.service-total span {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.service-total strong {
+  color: #00843d;
+  font-size: 24px;
+}
+
+.service-status-row {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.service-status-row span {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.service-status-row strong {
+  color: #374151;
+}
+
 /* ================= RESPONSIVE ================= */
+
+@media (max-width: 1000px) {
+  .queue-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .service-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .queue-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .service-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .service-overview-card {
+    padding: 20px;
+  }
+}
+
 
 @media (max-width: 800px) {
   .admin-header {

@@ -16,10 +16,16 @@ function AdminDashboard() {
   const navigate = useNavigate();
 
   const [employees, setEmployees] = useState([]);
+  const [queues, setQueues] = useState([]);
+
   const [loading, setLoading] = useState(true);
+  const [queueLoading, setQueueLoading] = useState(true);
+
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [actionLoading, setActionLoading] = useState(false);
+
+  const [actionLoading, setActionLoading] =
+    useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -37,6 +43,21 @@ function AdminDashboard() {
   };
 
   // ==========================================
+  // GET CURRENT USER
+  // ==========================================
+
+  const getCurrentUser = () => {
+    const storedUser =
+      localStorage.getItem("coopbankUser");
+
+    return storedUser
+      ? JSON.parse(storedUser)
+      : null;
+  };
+
+  const currentUser = getCurrentUser();
+
+  // ==========================================
   // HANDLE UNAUTHORIZED ACCESS
   // ==========================================
 
@@ -44,20 +65,10 @@ function AdminDashboard() {
     localStorage.removeItem("coopbankToken");
     localStorage.removeItem("coopbankUser");
 
-    navigate("/login", { replace: true });
+    navigate("/login", {
+      replace: true,
+    });
   };
-
-  // ==========================================
-  // GET CURRENT USER
-  // ==========================================
-
-  const getCurrentUser = () => {
-    const storedUser = localStorage.getItem("coopbankUser");
-
-    return storedUser ? JSON.parse(storedUser) : null;
-  };
-
-  const currentUser = getCurrentUser();
 
   // ==========================================
   // FETCH EMPLOYEES
@@ -66,7 +77,6 @@ function AdminDashboard() {
   const fetchEmployees = async () => {
     try {
       setLoading(true);
-      setError("");
 
       const token = getToken();
 
@@ -86,23 +96,31 @@ function AdminDashboard() {
 
       const data = await response.json();
 
-      if (response.status === 401 || response.status === 403) {
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
         handleUnauthorized();
         return;
       }
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Failed to load employees."
+          data.message ||
+            "Failed to load employees."
         );
       }
 
       setEmployees(data.employees || []);
     } catch (error) {
-      console.error("Fetch Employees Error:", error);
+      console.error(
+        "Fetch Employees Error:",
+        error
+      );
 
       setError(
-        error.message || "Unable to load employees."
+        error.message ||
+          "Unable to load employees."
       );
     } finally {
       setLoading(false);
@@ -110,18 +128,95 @@ function AdminDashboard() {
   };
 
   // ==========================================
-  // LOAD EMPLOYEES
+  // FETCH ALL QUEUES
+  // ==========================================
+
+  const fetchQueues = async () => {
+    try {
+      setQueueLoading(true);
+
+      const token = getToken();
+
+      if (!token) {
+        handleUnauthorized();
+        return;
+      }
+
+      const response = await fetch(
+        "http://localhost:5000/api/admin/queues",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        handleUnauthorized();
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            "Failed to load queues."
+        );
+      }
+
+      setQueues(data.queues || []);
+    } catch (error) {
+      console.error(
+        "Fetch Queues Error:",
+        error
+      );
+
+      setError(
+        error.message ||
+          "Unable to load queue statistics."
+      );
+    } finally {
+      setQueueLoading(false);
+    }
+  };
+
+  // ==========================================
+  // LOAD DATA
   // ==========================================
 
   useEffect(() => {
-    // Only Admin can access this page
-    if (!currentUser || currentUser.role !== "Admin") {
-      navigate("/login", { replace: true });
+    if (
+      !currentUser ||
+      currentUser.role !== "Admin"
+    ) {
+      navigate("/login", {
+        replace: true,
+      });
+
       return;
     }
 
     fetchEmployees();
+    fetchQueues();
   }, []);
+
+  // ==========================================
+  // REFRESH EVERYTHING
+  // ==========================================
+
+  const handleRefresh = async () => {
+    setError("");
+    setMessage("");
+
+    await Promise.all([
+      fetchEmployees(),
+      fetchQueues(),
+    ]);
+  };
 
   // ==========================================
   // HANDLE FORM INPUT
@@ -136,11 +231,12 @@ function AdminDashboard() {
     }));
   };
 
-  // ==========================================
   // CREATE EMPLOYEE
-  // ==========================================
+ 
 
-  const handleCreateEmployee = async (event) => {
+  const handleCreateEmployee = async (
+    event
+  ) => {
     event.preventDefault();
 
     try {
@@ -156,28 +252,38 @@ function AdminDashboard() {
           method: "POST",
 
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${token}`,
           },
 
           body: JSON.stringify(formData),
         }
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
-      if (response.status === 401 || response.status === 403) {
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
         handleUnauthorized();
         return;
       }
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Failed to create employee."
+          data.message ||
+            "Failed to create employee."
         );
       }
 
-      setMessage("Employee created successfully.");
+      setMessage(
+        "Employee created successfully."
+      );
 
       setFormData({
         name: "",
@@ -188,10 +294,14 @@ function AdminDashboard() {
 
       await fetchEmployees();
     } catch (error) {
-      console.error("Create Employee Error:", error);
+      console.error(
+        "Create Employee Error:",
+        error
+      );
 
       setError(
-        error.message || "Unable to create employee."
+        error.message ||
+          "Unable to create employee."
       );
     } finally {
       setActionLoading(false);
@@ -219,8 +329,11 @@ function AdminDashboard() {
           method: "PUT",
 
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${token}`,
           },
 
           body: JSON.stringify({
@@ -229,9 +342,13 @@ function AdminDashboard() {
         }
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
-      if (response.status === 401 || response.status === 403) {
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
         handleUnauthorized();
         return;
       }
@@ -243,7 +360,9 @@ function AdminDashboard() {
         );
       }
 
-      setMessage("Employee service updated successfully.");
+      setMessage(
+        "Employee service updated successfully."
+      );
 
       await fetchEmployees();
     } catch (error) {
@@ -265,7 +384,9 @@ function AdminDashboard() {
   // DELETE EMPLOYEE
   // ==========================================
 
-  const handleDeleteEmployee = async (employee) => {
+  const handleDeleteEmployee = async (
+    employee
+  ) => {
     const confirmed = window.confirm(
       `Are you sure you want to delete ${employee.name}?`
     );
@@ -287,25 +408,33 @@ function AdminDashboard() {
           method: "DELETE",
 
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization:
+              `Bearer ${token}`,
           },
         }
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
-      if (response.status === 401 || response.status === 403) {
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
         handleUnauthorized();
         return;
       }
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Failed to delete employee."
+          data.message ||
+            "Failed to delete employee."
         );
       }
 
-      setMessage("Employee deleted successfully.");
+      setMessage(
+        "Employee deleted successfully."
+      );
 
       await fetchEmployees();
     } catch (error) {
@@ -331,40 +460,115 @@ function AdminDashboard() {
     localStorage.removeItem("coopbankToken");
     localStorage.removeItem("coopbankUser");
 
-    navigate("/login", { replace: true });
+    navigate("/login", {
+      replace: true,
+    });
   };
+
+  // ==========================================
+  // QUEUE STATISTICS
+  // ==========================================
+
+  const totalQueues = queues.length;
+
+  const waitingQueues = queues.filter(
+    (queue) =>
+      queue.status?.toLowerCase() ===
+      "waiting"
+  ).length;
+
+  const servingQueues = queues.filter(
+    (queue) =>
+      queue.status?.toLowerCase() ===
+      "serving"
+  ).length;
+
+  const completedQueues = queues.filter(
+    (queue) =>
+      queue.status?.toLowerCase() ===
+      "completed"
+  ).length;
+
+  // ==========================================
+  // SERVICE STATISTICS
+  // ==========================================
+
+  const serviceStatistics = SERVICES.map(
+    (service) => {
+      const serviceQueues = queues.filter(
+        (queue) =>
+          queue.service === service
+      );
+
+      return {
+        service,
+        total: serviceQueues.length,
+
+        waiting: serviceQueues.filter(
+          (queue) =>
+            queue.status?.toLowerCase() ===
+            "waiting"
+        ).length,
+
+        serving: serviceQueues.filter(
+          (queue) =>
+            queue.status?.toLowerCase() ===
+            "serving"
+        ).length,
+
+        completed: serviceQueues.filter(
+          (queue) =>
+            queue.status?.toLowerCase() ===
+            "completed"
+        ).length,
+      };
+    }
+  );
 
   return (
     <main className="admin-page">
+
       <section className="admin-container">
 
         {/* ================= HEADER ================= */}
 
         <div className="admin-header">
+
           <div>
+
             <span className="admin-tag">
               ADMINISTRATION
             </span>
 
-            <h1>Employee Management</h1>
+            <h1>
+              Branch Management Dashboard
+            </h1>
 
             <p>
               Welcome,{" "}
               <strong>
-                {currentUser?.name || "Administrator"}
+                {currentUser?.name ||
+                  "Administrator"}
               </strong>
             </p>
 
             <p>
-              Manage employees and assign banking services.
+              Monitor queues, employees,
+              and banking services.
             </p>
+
           </div>
 
           <div className="admin-header-actions">
+
             <button
               className="refresh-btn"
-              onClick={fetchEmployees}
-              disabled={loading || actionLoading}
+              onClick={handleRefresh}
+              disabled={
+                loading ||
+                queueLoading ||
+                actionLoading
+              }
             >
               ↻ Refresh
             </button>
@@ -375,7 +579,9 @@ function AdminDashboard() {
             >
               Logout
             </button>
+
           </div>
+
         </div>
 
         {/* ================= MESSAGES ================= */}
@@ -392,21 +598,170 @@ function AdminDashboard() {
           </div>
         )}
 
-        {/* ================= STATISTICS ================= */}
+        {/* ================= QUEUE STATISTICS ================= */}
+
+        <div className="dashboard-section">
+
+          <div className="section-heading">
+
+            <span>
+              QUEUE OVERVIEW
+            </span>
+
+            <h2>
+              Customer Queue Statistics
+            </h2>
+
+          </div>
+
+          <div className="queue-stats">
+
+            <div className="queue-stat-card total">
+              <span>Total Queues</span>
+              <strong>
+                {queueLoading
+                  ? "..."
+                  : totalQueues}
+              </strong>
+            </div>
+
+            <div className="queue-stat-card waiting">
+              <span>Waiting</span>
+              <strong>
+                {queueLoading
+                  ? "..."
+                  : waitingQueues}
+              </strong>
+            </div>
+
+            <div className="queue-stat-card serving">
+              <span>Being Served</span>
+              <strong>
+                {queueLoading
+                  ? "..."
+                  : servingQueues}
+              </strong>
+            </div>
+
+            <div className="queue-stat-card completed">
+              <span>Completed</span>
+              <strong>
+                {queueLoading
+                  ? "..."
+                  : completedQueues}
+              </strong>
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* ================= SERVICE STATISTICS ================= */}
+
+        <div className="service-overview-card">
+
+          <div className="card-heading">
+
+            <span>
+              BANKING SERVICES
+            </span>
+
+            <h2>
+              Queue Status by Service
+            </h2>
+
+          </div>
+
+          {queueLoading ? (
+            <div className="admin-loading">
+              Loading queue statistics...
+            </div>
+          ) : (
+            <div className="service-stat-grid">
+
+              {serviceStatistics.map(
+                (item) => (
+                  <div
+                    className="service-stat-card"
+                    key={item.service}
+                  >
+
+                    <h3>
+                      {item.service}
+                    </h3>
+
+                    <div className="service-total">
+                      <span>Total</span>
+
+                      <strong>
+                        {item.total}
+                      </strong>
+                    </div>
+
+                    <div className="service-status-row">
+
+                      <span>
+                        Waiting:
+                        <strong>
+                          {" "}
+                          {item.waiting}
+                        </strong>
+                      </span>
+
+                      <span>
+                        Serving:
+                        <strong>
+                          {" "}
+                          {item.serving}
+                        </strong>
+                      </span>
+
+                      <span>
+                        Completed:
+                        <strong>
+                          {" "}
+                          {item.completed}
+                        </strong>
+                      </span>
+
+                    </div>
+
+                  </div>
+                )
+              )}
+
+            </div>
+          )}
+
+        </div>
+
+        {/* ================= EMPLOYEE STATISTICS ================= */}
 
         <div className="admin-stats">
+
           <div className="admin-stat-card">
-            <span>Total Employees</span>
-            <strong>{employees.length}</strong>
+            <span>
+              Total Employees
+            </span>
+
+            <strong>
+              {employees.length}
+            </strong>
           </div>
 
           <div className="admin-stat-card">
-            <span>Assigned Services</span>
+            <span>
+              Assigned Services
+            </span>
+
             <strong>
               {
                 new Set(
                   employees
-                    .map((employee) => employee.service)
+                    .map(
+                      (employee) =>
+                        employee.service
+                    )
                     .filter(Boolean)
                 ).size
               }
@@ -414,24 +769,46 @@ function AdminDashboard() {
           </div>
 
           <div className="admin-stat-card">
-            <span>Available Services</span>
-            <strong>{SERVICES.length}</strong>
+            <span>
+              Available Services
+            </span>
+
+            <strong>
+              {SERVICES.length}
+            </strong>
           </div>
+
         </div>
 
         {/* ================= ADD EMPLOYEE ================= */}
 
         <div className="add-employee-card">
+
           <div className="card-heading">
-            <span>ADD EMPLOYEE</span>
-            <h2>Create New Employee</h2>
+
+            <span>
+              ADD EMPLOYEE
+            </span>
+
+            <h2>
+              Create New Employee
+            </h2>
+
           </div>
 
-          <form onSubmit={handleCreateEmployee}>
+          <form
+            onSubmit={
+              handleCreateEmployee
+            }
+          >
+
             <div className="employee-form-grid">
 
               <div className="form-group">
-                <label>Full Name</label>
+
+                <label>
+                  Full Name
+                </label>
 
                 <input
                   type="text"
@@ -441,10 +818,14 @@ function AdminDashboard() {
                   onChange={handleChange}
                   required
                 />
+
               </div>
 
               <div className="form-group">
-                <label>Email Address</label>
+
+                <label>
+                  Email Address
+                </label>
 
                 <input
                   type="email"
@@ -454,10 +835,14 @@ function AdminDashboard() {
                   onChange={handleChange}
                   required
                 />
+
               </div>
 
               <div className="form-group">
-                <label>Password</label>
+
+                <label>
+                  Password
+                </label>
 
                 <input
                   type="password"
@@ -467,10 +852,14 @@ function AdminDashboard() {
                   onChange={handleChange}
                   required
                 />
+
               </div>
 
               <div className="form-group">
-                <label>Assigned Service</label>
+
+                <label>
+                  Assigned Service
+                </label>
 
                 <select
                   name="service"
@@ -478,19 +867,24 @@ function AdminDashboard() {
                   onChange={handleChange}
                   required
                 >
+
                   <option value="">
                     Select a service
                   </option>
 
-                  {SERVICES.map((service) => (
-                    <option
-                      key={service}
-                      value={service}
-                    >
-                      {service}
-                    </option>
-                  ))}
+                  {SERVICES.map(
+                    (service) => (
+                      <option
+                        key={service}
+                        value={service}
+                      >
+                        {service}
+                      </option>
+                    )
+                  )}
+
                 </select>
+
               </div>
 
             </div>
@@ -504,7 +898,9 @@ function AdminDashboard() {
                 ? "Creating Employee..."
                 : "+ Add Employee"}
             </button>
+
           </form>
+
         </div>
 
         {/* ================= EMPLOYEE LIST ================= */}
@@ -512,107 +908,166 @@ function AdminDashboard() {
         <div className="employee-list-card">
 
           <div className="card-heading">
-            <span>EMPLOYEES</span>
-            <h2>Manage Bank Employees</h2>
+
+            <span>
+              EMPLOYEES
+            </span>
+
+            <h2>
+              Manage Bank Employees
+            </h2>
+
           </div>
 
           {loading ? (
+
             <div className="admin-loading">
               Loading employees...
             </div>
+
           ) : employees.length === 0 ? (
+
             <div className="admin-empty">
+
               <div>👥</div>
-              <h3>No Employees Found</h3>
+
+              <h3>
+                No Employees Found
+              </h3>
+
               <p>
-                Add your first employee using the form above.
+                Add your first employee
+                using the form above.
               </p>
+
             </div>
+
           ) : (
+
             <div className="employee-table-wrapper">
+
               <table className="employee-table">
 
                 <thead>
+
                   <tr>
                     <th>Employee</th>
                     <th>Email</th>
-                    <th>Assigned Service</th>
+                    <th>
+                      Assigned Service
+                    </th>
                     <th>Actions</th>
                   </tr>
+
                 </thead>
 
                 <tbody>
-                  {employees.map((employee) => (
-                    <tr key={employee._id}>
 
-                      <td>
-                        <div className="employee-name">
-                          <div className="employee-avatar">
-                            {employee.name
-                              .charAt(0)
-                              .toUpperCase()}
+                  {employees.map(
+                    (employee) => (
+
+                      <tr
+                        key={employee._id}
+                      >
+
+                        <td>
+
+                          <div className="employee-name">
+
+                            <div className="employee-avatar">
+
+                              {employee.name
+                                .charAt(0)
+                                .toUpperCase()}
+
+                            </div>
+
+                            <strong>
+                              {employee.name}
+                            </strong>
+
                           </div>
 
-                          <strong>
-                            {employee.name}
-                          </strong>
-                        </div>
-                      </td>
+                        </td>
 
-                      <td>{employee.email}</td>
+                        <td>
+                          {employee.email}
+                        </td>
 
-                      <td>
-                        <select
-                          className="service-select"
-                          value={employee.service || ""}
-                          onChange={(event) =>
-                            handleServiceChange(
-                              employee._id,
-                              event.target.value
-                            )
-                          }
-                          disabled={actionLoading}
-                        >
-                          <option value="">
-                            Select service
-                          </option>
+                        <td>
 
-                          {SERVICES.map((service) => (
-                            <option
-                              key={service}
-                              value={service}
-                            >
-                              {service}
+                          <select
+                            className="service-select"
+                            value={
+                              employee.service ||
+                              ""
+                            }
+                            onChange={(event) =>
+                              handleServiceChange(
+                                employee._id,
+                                event.target.value
+                              )
+                            }
+                            disabled={
+                              actionLoading
+                            }
+                          >
+
+                            <option value="">
+                              Select service
                             </option>
-                          ))}
-                        </select>
-                      </td>
 
-                      <td>
-                        <button
-                          className="delete-btn"
-                          onClick={() =>
-                            handleDeleteEmployee(employee)
-                          }
-                          disabled={actionLoading}
-                        >
-                          Delete
-                        </button>
-                      </td>
+                            {SERVICES.map(
+                              (service) => (
+                                <option
+                                  key={service}
+                                  value={service}
+                                >
+                                  {service}
+                                </option>
+                              )
+                            )}
 
-                    </tr>
-                  ))}
+                          </select>
+
+                        </td>
+
+                        <td>
+
+                          <button
+                            className="delete-btn"
+                            onClick={() =>
+                              handleDeleteEmployee(
+                                employee
+                              )
+                            }
+                            disabled={
+                              actionLoading
+                            }
+                          >
+                            Delete
+                          </button>
+
+                        </td>
+
+                      </tr>
+                    )
+                  )}
+
                 </tbody>
 
               </table>
+
             </div>
           )}
 
         </div>
 
       </section>
+
     </main>
   );
 }
 
 export default AdminDashboard;
+

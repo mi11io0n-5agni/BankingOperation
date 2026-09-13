@@ -6,8 +6,8 @@ import {
   createEmployee,
   updateEmployeeService,
   deleteEmployee,
+  getAllQueues,
 } from "../controllers/adminController.js";
-
 import protect from "../middleware/authMiddleware.js";
 import adminOnly from "../middleware/adminMiddleware.js";
 
@@ -41,6 +41,12 @@ router.delete(
   protect,
   adminOnly,
   deleteEmployee
+);
+router.get(
+  "/queues",
+  protect,
+  adminOnly,
+  getAllQueues
 );
 
 export default router;
