@@ -1,0 +1,499 @@
+/* ==========================================
+   KIOSK PAGE
+========================================== */
+.kiosk-page {
+  min-height: calc(100vh - 76px);
+  background: #f8faf9;
+  padding: 45px 20px;
+}
+
+.kiosk-container {
+  max-width: 1050px;
+  margin: 0 auto;
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+.kiosk-header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.kiosk-logo {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+  border-radius: 14px;
+  background: #00843d;
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.kiosk-tag {
+  color: #00843d;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.kiosk-header h1 {
+  margin: 8px 0 8px;
+  color: #1f2937;
+  font-size: 38px;
+}
+
+.kiosk-header p {
+  margin: 0 0 7px;
+  color: #4b5563;
+  font-size: 17px;
+}
+
+.kiosk-header small {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+/* ==========================================
+   SERVICES
+========================================== */
+.kiosk-services {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.kiosk-service-card {
+  min-height: 125px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  border: 2px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.kiosk-service-card:hover {
+  transform: translateY(-3px);
+  border-color: #00843d;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.kiosk-service-card:active {
+  transform: scale(0.98);
+}
+
+.kiosk-service-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.kiosk-service-card.loading {
+  border-color: #00843d;
+}
+
+/* ==========================================
+   SERVICE ICON
+========================================== */
+.kiosk-service-icon {
+  width: 65px;
+  height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: #f0fdf4;
+  font-size: 30px;
+}
+
+/* ==========================================
+   SERVICE CONTENT
+========================================== */
+.kiosk-service-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.kiosk-service-content strong {
+  color: #1f2937;
+  font-size: 18px;
+}
+
+.kiosk-service-content span {
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* ==========================================
+   SERVICE ARROW
+========================================== */
+.kiosk-service-arrow {
+  color: #00843d;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* ==========================================
+   HELP
+========================================== */
+.kiosk-help {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 25px;
+  padding: 18px 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.kiosk-help-icon {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #f0fdf4;
+  color: #00843d;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.kiosk-help strong {
+  color: #374151;
+  font-size: 14px;
+}
+
+.kiosk-help p {
+  margin: 4px 0 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* ==========================================
+   STAFF NOTE
+========================================== */
+.kiosk-staff-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+  text-align: center;
+}
+
+.kiosk-staff-note span {
+  font-size: 20px;
+}
+
+.kiosk-staff-note p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* ==========================================
+   ERROR
+========================================== */
+.kiosk-error {
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fef2f2;
+  text-align: center;
+}
+
+.kiosk-error strong {
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.kiosk-error p {
+  margin: 6px 0 12px;
+  color: #7f1d1d;
+  font-size: 13px;
+}
+
+.kiosk-error button {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 7px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ==========================================
+   TICKET SECTION
+========================================== */
+.kiosk-ticket-section {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.kiosk-success-icon {
+  width: 65px;
+  height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  background: #00843d;
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.kiosk-ticket-section h1 {
+  margin: 8px 0 8px;
+  color: #1f2937;
+  font-size: 36px;
+}
+
+.kiosk-ticket-intro {
+  margin: 0 auto 25px;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ==========================================
+   TICKET
+========================================== */
+.kiosk-ticket {
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+}
+
+.kiosk-ticket-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 25px;
+  border-bottom: 1px dashed #d1d5db;
+  text-align: left;
+}
+
+.kiosk-brand-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: #00843d;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.kiosk-ticket-brand div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.kiosk-ticket-brand strong {
+  color: #1f2937;
+  font-size: 16px;
+}
+
+.kiosk-ticket-brand span {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+/* ==========================================
+   TICKET NUMBER
+========================================== */
+.kiosk-ticket-number {
+  padding: 30px 20px;
+  border-bottom: 1px dashed #d1d5db;
+}
+
+.kiosk-ticket-number span {
+  display: block;
+  margin-bottom: 8px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.kiosk-ticket-number strong {
+  color: #00843d;
+  font-size: 58px;
+  letter-spacing: 2px;
+}
+
+/* ==========================================
+   TICKET SERVICE
+========================================== */
+.kiosk-ticket-service {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 25px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: left;
+}
+
+.kiosk-ticket-service span {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.kiosk-ticket-service strong {
+  color: #1f2937;
+  font-size: 14px;
+}
+
+/* ==========================================
+   TICKET STATUS
+========================================== */
+.kiosk-ticket-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 25px;
+  text-align: left;
+}
+
+.kiosk-ticket-status span {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.kiosk-ticket-status strong {
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 12px;
+}
+
+/* ==========================================
+   TICKET MESSAGE
+========================================== */
+.kiosk-ticket-message {
+  padding: 15px 20px;
+  background: #f8faf9;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ==========================================
+   TICKET ACTIONS
+========================================== */
+.kiosk-ticket-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.kiosk-new-btn,
+.kiosk-status-btn {
+  flex: 1;
+  padding: 13px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.kiosk-new-btn {
+  border: none;
+  background: #00843d;
+  color: #ffffff;
+}
+
+.kiosk-new-btn:hover {
+  background: #006b31;
+}
+
+.kiosk-status-btn {
+  border: 1px solid #00843d;
+  background: #ffffff;
+  color: #00843d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kiosk-status-btn:hover {
+  background: #f0fdf4;
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+@media (max-width: 750px) {
+  .kiosk-services {
+    grid-template-columns: 1fr;
+  }
+
+  .kiosk-header h1 {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 550px) {
+  .kiosk-page {
+    padding: 35px 15px;
+  }
+
+  .kiosk-service-card {
+    min-height: 105px;
+    padding: 18px;
+  }
+
+  .kiosk-service-icon {
+    width: 55px;
+    height: 55px;
+    font-size: 25px;
+  }
+
+  .kiosk-service-content strong {
+    font-size: 16px;
+  }
+
+  .kiosk-ticket-section h1 {
+    font-size: 30px;
+  }
+
+  .kiosk-ticket-number strong {
+    font-size: 48px;
+  }
+
+  .kiosk-ticket-actions {
+    flex-direction: column;
+  }
+}

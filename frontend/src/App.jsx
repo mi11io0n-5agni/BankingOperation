@@ -10,6 +10,7 @@ import QueueStatus from "./pages/QueueStatus/QueueStatus";
 import Login from "./pages/Login/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
+import Kiosk from "./pages/Kiosk/Kiosk";
 
 function App() {
   return (
@@ -56,6 +57,10 @@ function App() {
               <AdminDashboard />
             </ProtectedRoute>
           }
+        />
+        <Route
+          path="/kiosk"
+          element={<Kiosk />}
         />
 
       </Routes>
