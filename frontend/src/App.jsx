@@ -11,7 +11,7 @@ import Login from "./pages/Login/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
 import Kiosk from "./pages/Kiosk/Kiosk";
-
+import StaffQueue from "./pages/StaffQueue/StaffQueue";
 function App() {
   return (
     <>
@@ -62,6 +62,15 @@ function App() {
           path="/kiosk"
           element={<Kiosk />}
         />
+
+        <Route
+            path="/staff-queue"
+            element={
+              <ProtectedRoute>
+                <StaffQueue />
+              </ProtectedRoute>
+            }
+          />
 
       </Routes>
     </>
