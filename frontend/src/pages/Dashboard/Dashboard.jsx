@@ -1,11 +1,12 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "./Dashboard.css";
 
 function Dashboard() {
   const navigate = useNavigate();
-
+  
   // ==========================================
   // USER INFORMATION
   // ==========================================
@@ -346,7 +347,11 @@ function Dashboard() {
           </div>
 
           <div className="dashboard-header-actions">
-
+            <Link to="/staff-queue" className="register-customer-btn">
+              <span>＋</span>
+              Register Customer
+            </Link>
+            
             <button
               className="refresh-btn"
               onClick={fetchQueues}
@@ -624,7 +629,7 @@ function Dashboard() {
                           {queue.queueNumber}
                         </strong>
                       </td>
-
+                      
                       <td>
                         {queue.customerName}
                       </td>

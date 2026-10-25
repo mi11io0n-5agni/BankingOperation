@@ -720,6 +720,59 @@ td {
 .assigned-service strong {
   color: #00843d;
 }
+/* =========================================
+   REGISTER CUSTOMER BUTTON
+========================================= */
+
+.register-customer-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 42px;
+  padding: 0 16px;
+
+  border: 1px solid #00843d;
+  border-radius: 9px;
+
+  background: #00843d;
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.register-customer-btn span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.register-customer-btn:hover {
+  background: #006f33;
+  border-color: #006f33;
+
+  transform: translateY(-1px);
+}
+
+.register-customer-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 600px) {
+  .register-customer-btn {
+    width: 100%;
+  }
+}
 
 
 /* ================= RESPONSIVE ================= */
