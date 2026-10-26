@@ -1,4 +1,4 @@
-
+import API_URL from "../../config/api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AdminDashboard.css";
@@ -85,14 +85,14 @@ function AdminDashboard() {
         return;
       }
 
-      const response = await fetch(
-        "http://localhost:5000/api/admin/employees",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+    const response = await fetch(
+      `${API_URL}/api/admin/employees`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
       const data = await response.json();
 
@@ -143,7 +143,7 @@ function AdminDashboard() {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/admin/queues",
+        `${API_URL}/api/admin/queues`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -247,7 +247,7 @@ function AdminDashboard() {
       const token = getToken();
 
       const response = await fetch(
-        "http://localhost:5000/api/admin/employees",
+        `${API_URL}/api/admin/employees`,
         {
           method: "POST",
 
@@ -324,7 +324,7 @@ function AdminDashboard() {
       const token = getToken();
 
       const response = await fetch(
-        `http://localhost:5000/api/admin/employees/${employeeId}/service`,
+        `${API_URL}/api/admin/employees/${employeeId}/service`,
         {
           method: "PUT",
 
@@ -403,7 +403,7 @@ function AdminDashboard() {
       const token = getToken();
 
       const response = await fetch(
-        `http://localhost:5000/api/admin/employees/${employee._id}`,
+        `${API_URL}/api/admin/employees/${employee._id}`,
         {
           method: "DELETE",
 

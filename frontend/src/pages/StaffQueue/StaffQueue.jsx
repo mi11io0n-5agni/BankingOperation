@@ -1,3 +1,4 @@
+import API_URL from "../../config/api";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "./StaffQueue.css";
@@ -96,7 +97,7 @@ function StaffQueue() {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/queues",
+       `${API_URL}/api/queues`,
         {
           method: "POST",
           headers: {

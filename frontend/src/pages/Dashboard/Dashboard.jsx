@@ -1,4 +1,4 @@
-
+import API_URL from "../../config/api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
@@ -65,7 +65,7 @@ function Dashboard() {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/queues",
+        `${API_URL}/api/queues`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -126,7 +126,7 @@ function Dashboard() {
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/queues/${id}/status`,
+        `${API_URL}/api/queues/${id}/status`,
         {
           method: "PATCH",
 
